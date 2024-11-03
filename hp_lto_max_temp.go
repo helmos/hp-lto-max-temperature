@@ -87,14 +87,26 @@ type SG_IO_Header struct {
 var verbose bool
 
 func main() {
-	// Parse the verbose flag
+	
+	// Define and parse the flags
 	flag.BoolVar(&verbose, "verbose", false, "Enable verbose output")
+	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr, "Usage: %s [--verbose] <scsi_device>\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "Options:\n")
+		flag.PrintDefaults()
+		fmt.Fprintf(os.Stderr, "Example: %s --verbose /dev/sg4\n", os.Args[0])
+	}
 	flag.Parse()
+
+	// Check if --help flag is specified, show usage and exit with zero status code
+	if len(os.Args) > 1 && os.Args[1] == "--help" {
+		flag.Usage()
+		os.Exit(0)
+	}
 
 	// Check if a device argument is provided
 	if len(flag.Args()) < 1 {
-		fmt.Fprintf(os.Stderr, "Usage: %s [--verbose] <scsi_device>\n", os.Args[0])
-		fmt.Fprintf(os.Stderr, "Example: %s --verbose /dev/sg4\n", os.Args[0])
+		flag.Usage()
 		os.Exit(1)
 	}
 
