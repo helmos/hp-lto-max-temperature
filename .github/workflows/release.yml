@@ -51,7 +51,8 @@ jobs:
           new_patch=$((patch + 1))
           # Construct the new tag
           new_tag="v${major}.${minor}.${new_patch}"
-          echo "new_tag=${new_tag}" >> $GITHUB_ENV
+          # Save the new tag to GITHUB_ENV to use it in later steps
+          echo "new_tag=$new_tag" >> $GITHUB_ENV
 
       - name: Create Git Tag
         run: |
