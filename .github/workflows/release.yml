@@ -6,6 +6,9 @@ on:
   push:
     branches:
       - main  # Trigger only on pushes to main (e.g., after a PR is merged)
+    paths:
+      - hp_lto_max_temp.go  # Trigger only if this file changes
+      - go.mod              # Trigger only if go.mod changes
 
 jobs:
   build-and-release:
@@ -50,10 +53,19 @@ jobs:
           major=$(echo $latest_tag | cut -d. -f1 | sed 's/v//')
           minor=$(echo $latest_tag | cut -d. -f2)
           patch=$(echo $latest_tag | cut -d. -f3)
-          # Increment the patch version
-          new_patch=$((patch + 1))
-          # Construct the new tag
-          new_tag="v${major}.${minor}.${new_patch}"
+
+          # Increment the patch version until a unique tag is found
+          while true; do
+            new_patch=$((patch + 1))
+            new_tag="v${major}.${minor}.${new_patch}"
+            # Check if the tag already exists on the remote
+            if ! git ls-remote --tags origin | grep -q "refs/tags/${new_tag}$"; then
+              break
+            fi
+            # If tag exists, increment the patch and check again
+            patch=$new_patch
+          done
+
           # Save the new tag to GITHUB_ENV to use it in later steps
           echo "new_tag=$new_tag" >> $GITHUB_ENV
 
