@@ -10,6 +10,8 @@ on:
 jobs:
   build-and-release:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Grant permissions to create releases and upload assets
 
     steps:
       - name: Check out the code
@@ -36,15 +38,37 @@ jobs:
       - name: Build the binary
         run: CGO_ENABLED=0 go build -v -a -ldflags '-extldflags "-static"' -o hp_lto_max_temp hp_lto_max_temp.go  # Compile the binary
 
+      - name: Set Release Version Tag
+        id: tag_version
+        run: |
+          # Get the latest tag or start from v0.0.0 if no tags exist
+          latest_tag=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          # Extract major, minor, patch from the latest tag
+          major=$(echo $latest_tag | cut -d. -f1 | sed 's/v//')
+          minor=$(echo $latest_tag | cut -d. -f2)
+          patch=$(echo $latest_tag | cut -d. -f3)
+          # Increment the patch version
+          new_patch=$((patch + 1))
+          # Construct the new tag
+          new_tag="v${major}.${minor}.${new_patch}"
+          echo "new_tag=${new_tag}" >> $GITHUB_ENV
+
+      - name: Create Git Tag
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git tag ${{ env.new_tag }}
+          git push origin ${{ env.new_tag }}
+
       - name: Create GitHub Release
         id: create_release
         uses: actions/create-release@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # GitHub automatically provides this token
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.sha }}                 # Use the commit SHA or define versioning logic
-          release_name: "Release ${{ github.sha }}"   # Name the release
-          draft: false                                # Set to true if you want to review before publishing
+          tag_name: ${{ env.new_tag }}                 # Use the new tag created above
+          release_name: "Release ${{ env.new_tag }}"   # Name the release
+          draft: false
           prerelease: false
 
       - name: Upload Release Asset
