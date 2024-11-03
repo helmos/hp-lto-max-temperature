@@ -1,0 +1,58 @@
+# .github/workflows/release.yml
+
+name: Release on Merge to Main
+
+on:
+  push:
+    branches:
+      - main  # Trigger only on pushes to main (e.g., after a PR is merged)
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21.6'  # Specify the Go version you need
+
+      - name: Cache Go modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Install dependencies
+        run: go mod download  # Install dependencies
+
+      - name: Build the binary
+        run: CGO_ENABLED=0 go build -v -a -ldflags '-extldflags "-static"' -o hp_lto_max_temp hp_lto_max_temp.go  # Compile the binary
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # GitHub automatically provides this token
+        with:
+          tag_name: ${{ github.sha }}                 # Use the commit SHA or define versioning logic
+          release_name: "Release ${{ github.sha }}"   # Name the release
+          draft: false                                # Set to true if you want to review before publishing
+          prerelease: false
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./hp_lto_max_temp               # Path to the binary
+          asset_name: hp_lto_max_temp                 # Name for the uploaded binary
+          asset_content_type: application/octet-stream
