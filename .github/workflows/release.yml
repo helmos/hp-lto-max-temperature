@@ -17,6 +17,9 @@ jobs:
       - name: Check out the code
         uses: actions/checkout@v3
 
+      - name: Fetch all tags
+        run: git fetch --tags  # Ensure we have all tags from the remote
+
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
