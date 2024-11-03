@@ -1,0 +1,44 @@
+# .github/workflows/build.yml
+
+name: Build HP LTO Max Temperature App
+
+on:
+  push:
+    branches:
+      - main
+      - 'feature/*'   # Automatically build on pushes to main and feature branches
+  pull_request:
+    branches:
+      - main          # Automatically build on pull requests targeting main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3  # Checks out the repository code
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21.6'      # Specify the Go version to use (update as needed)
+
+      - name: Cache Go modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Install dependencies
+        run: go mod download   # Download dependencies as defined in go.mod
+
+      - name: Build application
+        run: CGO_ENABLED=0 go build -v -a -ldflags '-extldflags "-static"' -o ht_lto_max_temp hp_lto_max_temp.go   # Builds the binary named ht_lto_max_temp
+
+      - name: Verify build
+        run: ./ht_lto_max_temp   # Verify the build by running the command (or another valid option)
