@@ -41,4 +41,4 @@ jobs:
         run: CGO_ENABLED=0 go build -v -a -ldflags '-extldflags "-static"' -o ht_lto_max_temp hp_lto_max_temp.go   # Builds the binary named ht_lto_max_temp
 
       - name: Verify build
-        run: ./ht_lto_max_temp   # Verify the build by running the command (or another valid option)
+        run: ./ht_lto_max_temp --help  # Verify the build by running the command (or another valid option)
