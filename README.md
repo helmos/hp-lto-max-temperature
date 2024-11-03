@@ -12,3 +12,7 @@ sudo ./hp_lto_max_temp /dev/sg0
 
 # Reference
 https://docs.oracle.com/cd/E38452_01/en/LTO6_Vol1_E1_D7/LTO6_Vol1_E1_D7.pdf 
+![Screenshot from 2024-11-04 00-09-01](https://github.com/user-attachments/assets/6c7bab99-3f94-45a1-ac14-3071e7c36ec5)
+
+
+
