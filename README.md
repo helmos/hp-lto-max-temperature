@@ -1,4 +1,4 @@
-# hp-lto-max-temperature
+# HP LTO Max Temperature
 
 # Description
 This golang app provides functionality of getting max temperature of the LTO drive internals since boot or last cartrige mount as per HP specification.
