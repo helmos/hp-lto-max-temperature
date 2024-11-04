@@ -4,7 +4,7 @@
 This golang app provides functionality of getting max temperature of the LTO drive internals since boot or last cartrige mount as per HP specification.
 That may be useful for understanding if your drive has good enough cooling.
 
-To get current temperature inside the drive use
+*To get current temperature inside the drive instead use
 ```bash
 sudo sg_logs -p temp  /dev/sg4
 ```
